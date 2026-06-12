@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ThinkCamp | Build Ideas That Work</title>
+    <meta
+      name="description"
+      content="ThinkCamp is a small software lab focused on practical tools, creative coding, and manufacturing workflows."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="ThinkCamp home">
+        <span class="brand-mark" aria-hidden="true">TC</span>
+        <span>ThinkCamp</span>
+      </a>
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a href="#work">Work</a>
+        <a href="#principles">Principles</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <canvas id="hero-canvas" aria-hidden="true"></canvas>
+        <div class="hero-content">
+          <p class="eyebrow">Software lab and build notebook</p>
+          <h1 id="hero-title">ThinkCamp</h1>
+          <p class="hero-copy">
+            Practical software experiments for visual programming, CNC workflows,
+            and tools that turn rough ideas into working systems.
+          </p>
+          <div class="hero-actions" aria-label="Primary actions">
+            <a class="button primary" href="#work">View work</a>
+            <a class="button secondary" href="https://github.com/thinkcamp">GitHub</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section work-section" id="work" aria-labelledby="work-title">
+        <div class="section-inner">
+          <div class="section-heading">
+            <p class="eyebrow">Current focus</p>
+            <h2 id="work-title">Tools for builders</h2>
+            <p>
+              A compact portfolio for projects that combine engineering judgment,
+              product thinking, and hands-on implementation.
+            </p>
+          </div>
+
+          <div class="project-grid">
+            <article class="project-card">
+              <p class="project-kicker">Desktop tooling</p>
+              <h3>SketchBlockProgram</h3>
+              <p>
+                Blockly-based CNC sketch editing inside a desktop workflow, with
+                program open, save, history, and G-code integration.
+              </p>
+            </article>
+
+            <article class="project-card">
+              <p class="project-kicker">Manufacturing UX</p>
+              <h3>Visual CNC workflows</h3>
+              <p>
+                Interfaces that make machine setup, program structure, and
+                generated output easier to inspect before production.
+              </p>
+            </article>
+
+            <article class="project-card">
+              <p class="project-kicker">Research notes</p>
+              <h3>Build logs</h3>
+              <p>
+                Short technical notes on architecture, reliability, and the
+                trade-offs behind maintainable software systems.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section principles-section" id="principles" aria-labelledby="principles-title">
+        <div class="section-inner split-layout">
+          <div class="section-heading">
+            <p class="eyebrow">How ThinkCamp works</p>
+            <h2 id="principles-title">Simple systems, inspected deeply</h2>
+          </div>
+
+          <div class="principle-list">
+            <article>
+              <h3>Build small, verify early</h3>
+              <p>
+                Ship narrow slices, test the real path, and keep risky changes
+                visible before they become expensive.
+              </p>
+            </article>
+            <article>
+              <h3>Respect the operator</h3>
+              <p>
+                Tools should reduce doubt, not hide important details behind
+                decoration or fragile automation.
+              </p>
+            </article>
+            <article>
+              <h3>Leave code easier to own</h3>
+              <p>
+                Favor clear boundaries, predictable data flow, and changes that
+                future maintainers can reason about quickly.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section contact-section" id="contact" aria-labelledby="contact-title">
+        <div class="section-inner contact-layout">
+          <div>
+            <p class="eyebrow">Connect</p>
+            <h2 id="contact-title">Follow the work on GitHub</h2>
+          </div>
+          <a class="button primary" href="https://github.com/thinkcamp">Open GitHub profile</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>ThinkCamp</span>
+      <span>Hosted with GitHub Pages.</span>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
