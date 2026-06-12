@@ -10,6 +10,43 @@ let blocks = [];
 
 const palette = ["#2457ff", "#138a8a", "#c8503a", "#c98b1a", "#eef3ff"];
 
+function addReducedMotionListener(listener) {
+  if (typeof prefersReducedMotion.addEventListener === "function") {
+    prefersReducedMotion.addEventListener("change", listener);
+    return;
+  }
+
+  if (typeof prefersReducedMotion.addListener === "function") {
+    prefersReducedMotion.addListener(listener);
+  }
+}
+
+function roundedRectPath(x, y, blockWidth, blockHeight, radius) {
+  if (typeof context.roundRect === "function") {
+    context.roundRect(x, y, blockWidth, blockHeight, radius);
+    return;
+  }
+
+  const safeRadius = Math.min(radius, blockWidth / 2, blockHeight / 2);
+
+  context.moveTo(x + safeRadius, y);
+  context.lineTo(x + blockWidth - safeRadius, y);
+  context.arcTo(x + blockWidth, y, x + blockWidth, y + safeRadius, safeRadius);
+  context.lineTo(x + blockWidth, y + blockHeight - safeRadius);
+  context.arcTo(
+    x + blockWidth,
+    y + blockHeight,
+    x + blockWidth - safeRadius,
+    y + blockHeight,
+    safeRadius,
+  );
+  context.lineTo(x + safeRadius, y + blockHeight);
+  context.arcTo(x, y + blockHeight, x, y + blockHeight - safeRadius, safeRadius);
+  context.lineTo(x, y + safeRadius);
+  context.arcTo(x, y, x + safeRadius, y, safeRadius);
+  context.closePath();
+}
+
 function resizeCanvas() {
   ratio = Math.min(window.devicePixelRatio || 1, 2);
   width = canvas.clientWidth;
@@ -56,7 +93,7 @@ function drawBlock(block, time) {
   context.strokeStyle = "rgba(255, 255, 255, 0.16)";
   context.lineWidth = 1;
   context.beginPath();
-  context.roundRect(x, y, block.width, block.height, 7);
+  roundedRectPath(x, y, block.width, block.height, 7);
   context.fill();
   context.stroke();
 
@@ -130,7 +167,7 @@ function startCanvas() {
 }
 
 window.addEventListener("resize", startCanvas);
-prefersReducedMotion.addEventListener("change", startCanvas);
+addReducedMotionListener(startCanvas);
 startCanvas();
 
 const quizList = document.getElementById("quiz-list");
