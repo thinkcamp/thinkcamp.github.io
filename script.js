@@ -179,13 +179,146 @@ const quizAnswerFileInput = document.getElementById("quiz-answer-file");
 
 let quizItems = [];
 
-function splitQuizFile(text) {
+function normalizeQuizText(text) {
   return text
     .replace(/^\uFEFF/, "")
     .replace(/\r\n/g, "\n")
+    .replace(/\r/g, "\n");
+}
+
+function splitQuizLines(text) {
+  return normalizeQuizText(text)
     .split("\n")
     .map((line) => line.trim())
     .filter(Boolean);
+}
+
+function parseNumberPrefix(line) {
+  const bracketMatch = line.match(/^\s*\[(?:[QqAa]\s*)?(\d+)\]\s*(.*)$/);
+
+  if (bracketMatch) {
+    return {
+      number: bracketMatch[1],
+      text: bracketMatch[2].trim(),
+    };
+  }
+
+  const prefixMatch = line.match(/^\s*(?:[QqAa]\s*)?(\d+)\s*[\).\]:：-]\s*(.*)$/);
+
+  if (!prefixMatch) {
+    return null;
+  }
+
+  return {
+    number: prefixMatch[1],
+    text: prefixMatch[2].trim(),
+  };
+}
+
+function parseQuestions(text) {
+  return splitQuizLines(text).map((line, index) => {
+    const numberedQuestion = parseNumberPrefix(line);
+
+    if (numberedQuestion) {
+      return {
+        number: numberedQuestion.number,
+        question: numberedQuestion.text,
+        hasExplicitNumber: true,
+      };
+    }
+
+    return {
+      number: String(index + 1),
+      question: line,
+      hasExplicitNumber: false,
+    };
+  });
+}
+
+function trimBlankEdges(lines) {
+  const trimmed = [...lines];
+
+  while (trimmed.length > 0 && trimmed[0].trim() === "") {
+    trimmed.shift();
+  }
+
+  while (trimmed.length > 0 && trimmed[trimmed.length - 1].trim() === "") {
+    trimmed.pop();
+  }
+
+  return trimmed;
+}
+
+function splitAnswerBlocks(text) {
+  const blocks = [];
+  let currentBlock = [];
+
+  normalizeQuizText(text)
+    .split("\n")
+    .forEach((line) => {
+      if (/^\s*---+\s*$/.test(line)) {
+        const trimmedBlock = trimBlankEdges(currentBlock);
+
+        if (trimmedBlock.length > 0) {
+          blocks.push(trimmedBlock);
+        }
+
+        currentBlock = [];
+        return;
+      }
+
+      currentBlock.push(line);
+    });
+
+  const trimmedBlock = trimBlankEdges(currentBlock);
+
+  if (trimmedBlock.length > 0) {
+    blocks.push(trimmedBlock);
+  }
+
+  return blocks;
+}
+
+function parseAnswers(text) {
+  const normalizedText = normalizeQuizText(text);
+  const lines = splitQuizLines(normalizedText);
+  const hasSeparators = normalizedText
+    .split("\n")
+    .some((line) => /^\s*---+\s*$/.test(line));
+  const numberedLines = lines.map((line) => parseNumberPrefix(line));
+  const canUseLineAnswers =
+    !hasSeparators &&
+    (numberedLines.every(Boolean) || numberedLines.every((numberedLine) => !numberedLine));
+
+  if (canUseLineAnswers) {
+    return lines.map((line, index) => {
+      const numberedAnswer = parseNumberPrefix(line);
+
+      return {
+        number: numberedAnswer ? numberedAnswer.number : String(index + 1),
+        answer: numberedAnswer ? numberedAnswer.text : line,
+        hasExplicitNumber: Boolean(numberedAnswer),
+      };
+    });
+  }
+
+  return splitAnswerBlocks(normalizedText).map((block, index) => {
+    const [firstLine = "", ...restLines] = block;
+    const numberedAnswer = parseNumberPrefix(firstLine);
+    const answerLines = numberedAnswer
+      ? [numberedAnswer.text, ...restLines]
+      : block;
+
+    return {
+      number: numberedAnswer ? numberedAnswer.number : String(index + 1),
+      answer: answerLines.join("\n").trim(),
+      hasExplicitNumber: Boolean(numberedAnswer),
+    };
+  });
+}
+
+function formatNumbers(numbers) {
+  return [...new Set(numbers)].join(", ");
 }
 
 async function readQuizFile(path) {
@@ -252,7 +385,7 @@ function createQuizCard(item, index) {
   questionButton.setAttribute("aria-controls", answerId);
 
   number.className = "quiz-number";
-  number.textContent = String(index + 1).padStart(2, "0");
+  number.textContent = String(item.number || index + 1).padStart(2, "0");
 
   question.textContent = item.question;
 
@@ -263,8 +396,9 @@ function createQuizCard(item, index) {
   answerInner.className = "quiz-answer-inner";
 
   answerLabel.className = "quiz-answer-label";
-  answerLabel.textContent = "정답";
+  answerLabel.textContent = item.answerNumber ? `정답 ${item.answerNumber}` : "정답";
 
+  answerText.className = "quiz-answer-text";
   answerText.textContent = item.answer;
 
   questionButton.append(number, question);
@@ -322,14 +456,58 @@ function handleQuizAction(action) {
 }
 
 function loadQuizFromText(questionText, answerText) {
-  const questions = splitQuizFile(questionText);
-  const answers = splitQuizFile(answerText);
-  const itemCount = Math.min(questions.length, answers.length);
+  const questions = parseQuestions(questionText);
+  const answers = parseAnswers(answerText);
+  const usesNumberMatching =
+    questions.some((question) => question.hasExplicitNumber) ||
+    answers.some((answer) => answer.hasExplicitNumber);
+  const missingAnswerNumbers = [];
+  const extraAnswerNumbers = [];
+  const duplicateAnswerNumbers = [];
 
-  quizItems = questions.slice(0, itemCount).map((question, index) => ({
-    question,
-    answer: answers[index],
-  }));
+  if (usesNumberMatching) {
+    const answersByNumber = new Map();
+    const questionNumbers = new Set(questions.map((question) => question.number));
+
+    answers.forEach((answer) => {
+      if (answersByNumber.has(answer.number)) {
+        duplicateAnswerNumbers.push(answer.number);
+        return;
+      }
+
+      answersByNumber.set(answer.number, answer);
+    });
+
+    answers.forEach((answer) => {
+      if (!questionNumbers.has(answer.number)) {
+        extraAnswerNumbers.push(answer.number);
+      }
+    });
+
+    quizItems = questions.map((question) => {
+      const answer = answersByNumber.get(question.number);
+
+      if (!answer) {
+        missingAnswerNumbers.push(question.number);
+      }
+
+      return {
+        number: question.number,
+        question: question.question,
+        answer: answer ? answer.answer : "연결된 정답이 없습니다.",
+        answerNumber: answer ? answer.number : "",
+      };
+    });
+  } else {
+    const itemCount = Math.min(questions.length, answers.length);
+
+    quizItems = questions.slice(0, itemCount).map((question, index) => ({
+      number: question.number,
+      question: question.question,
+      answer: answers[index].answer,
+      answerNumber: answers[index].number,
+    }));
+  }
 
   renderQuiz(quizItems);
 
@@ -341,9 +519,32 @@ function loadQuizFromText(questionText, answerText) {
 
   setQuizControlsEnabled(true);
 
+  if (usesNumberMatching) {
+    const notes = [];
+
+    if (missingAnswerNumbers.length > 0) {
+      notes.push(`답 없음: ${formatNumbers(missingAnswerNumbers)}`);
+    }
+
+    if (extraAnswerNumbers.length > 0) {
+      notes.push(`문제 없음: ${formatNumbers(extraAnswerNumbers)}`);
+    }
+
+    if (duplicateAnswerNumbers.length > 0) {
+      notes.push(`중복 답 번호: ${formatNumbers(duplicateAnswerNumbers)}`);
+    }
+
+    setQuizStatus(
+      notes.length > 0
+        ? `${quizItems.length}개 문제를 불러왔습니다. ${notes.join(" / ")}.`
+        : `${quizItems.length}개 문제를 불러왔습니다.`,
+    );
+    return;
+  }
+
   if (questions.length !== answers.length) {
     setQuizStatus(
-      `${quizItems.length}개 문제를 불러왔습니다. 질문과 정답의 줄 수가 달라 같은 번호만 표시합니다.`,
+      `${quizItems.length}개 문제를 불러왔습니다. 질문과 정답 수가 달라 같은 번호만 표시합니다.`,
     );
     return;
   }
