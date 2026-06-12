@@ -174,8 +174,7 @@ const quizList = document.getElementById("quiz-list");
 const quizStatus = document.getElementById("quiz-status");
 const quizControls = document.querySelectorAll("[data-quiz-action]");
 const quizFileLoader = document.getElementById("quiz-file-loader");
-const quizQuestionFileInput = document.getElementById("quiz-question-file");
-const quizAnswerFileInput = document.getElementById("quiz-answer-file");
+const quizQaFileInput = document.getElementById("quiz-qa-file");
 
 let quizItems = [];
 
@@ -319,6 +318,59 @@ function parseAnswers(text) {
 
 function formatNumbers(numbers) {
   return [...new Set(numbers)].join(", ");
+}
+
+function parseQaText(text) {
+  return splitAnswerBlocks(text).map((block, index) => {
+    let number = String(index + 1);
+    let question = "";
+    const answerLines = [];
+    let activeField = "";
+
+    block.forEach((line) => {
+      const fieldMatch = line.match(/^\s*([QqAa])\s*[:：]\s*(.*)$/);
+
+      if (fieldMatch) {
+        activeField = fieldMatch[1].toUpperCase();
+
+        if (activeField === "Q") {
+          const numberedQuestion = parseNumberPrefix(fieldMatch[2]);
+          number = numberedQuestion ? numberedQuestion.number : number;
+          question = numberedQuestion ? numberedQuestion.text : fieldMatch[2].trim();
+          return;
+        }
+
+        if (activeField === "A") {
+          const numberedAnswer = parseNumberPrefix(fieldMatch[2]);
+
+          if (numberedAnswer) {
+            number = numberedAnswer.number;
+            answerLines.push(numberedAnswer.text);
+          } else {
+            answerLines.push(fieldMatch[2]);
+          }
+
+          return;
+        }
+      }
+
+      if (activeField === "Q") {
+        question = question ? `${question}\n${line}` : line.trim();
+        return;
+      }
+
+      if (activeField === "A") {
+        answerLines.push(line);
+      }
+    });
+
+    return {
+      number,
+      question: question.trim(),
+      answer: trimBlankEdges(answerLines).join("\n").trim(),
+      answerNumber: number,
+    };
+  });
 }
 
 async function readQuizFile(path) {
@@ -552,23 +604,34 @@ function loadQuizFromText(questionText, answerText) {
   setQuizStatus(`${quizItems.length}개 문제를 불러왔습니다.`);
 }
 
-async function loadQuizFromSelectedFiles() {
-  const questionFile = quizQuestionFileInput?.files?.[0];
-  const answerFile = quizAnswerFileInput?.files?.[0];
+function loadQuizFromQaText(qaText) {
+  quizItems = parseQaText(qaText).filter((item) => item.question || item.answer);
 
-  if (!questionFile || !answerFile) {
+  renderQuiz(quizItems);
+
+  if (quizItems.length === 0) {
+    setQuizStatus("표시할 문제가 없습니다.");
     setQuizControlsEnabled(false);
-    setQuizStatus("Question.txt와 Answer.txt를 모두 선택해 주세요.");
+    return;
+  }
+
+  setQuizControlsEnabled(true);
+  setQuizStatus(`${quizItems.length}개 문제를 불러왔습니다.`);
+}
+
+async function loadQuizFromSelectedFiles() {
+  const qaFile = quizQaFileInput?.files?.[0];
+
+  if (!qaFile) {
+    setQuizControlsEnabled(false);
+    setQuizStatus("Q&A.txt를 선택해 주세요.");
     return;
   }
 
   try {
-    const [questionText, answerText] = await Promise.all([
-      readSelectedFile(questionFile),
-      readSelectedFile(answerFile),
-    ]);
+    const qaText = await readSelectedFile(qaFile);
 
-    loadQuizFromText(questionText, answerText);
+    loadQuizFromQaText(qaText);
   } catch (error) {
     setQuizControlsEnabled(false);
     setQuizStatus("선택한 파일을 읽지 못했습니다. txt 파일인지 확인해 주세요.");
@@ -583,16 +646,21 @@ async function loadQuiz() {
 
   try {
     setQuizFileLoaderVisible(false);
-    const [questionText, answerText] = await Promise.all([
-      readQuizFile("Question.txt"),
-      readQuizFile("Answer.txt"),
-    ]);
-    loadQuizFromText(questionText, answerText);
+    const qaText = await readQuizFile("Q&A.txt");
+    loadQuizFromQaText(qaText);
   } catch (error) {
-    setQuizControlsEnabled(false);
-    setQuizFileLoaderVisible(true);
-    setQuizStatus("자동으로 문제를 불러오지 못했습니다. Question.txt와 Answer.txt를 직접 선택해 주세요.");
-    console.error(error);
+    try {
+      const [questionText, answerText] = await Promise.all([
+        readQuizFile("Question.txt"),
+        readQuizFile("Answer.txt"),
+      ]);
+      loadQuizFromText(questionText, answerText);
+    } catch (fallbackError) {
+      setQuizControlsEnabled(false);
+      setQuizFileLoaderVisible(true);
+      setQuizStatus("자동으로 문제를 불러오지 못했습니다. Q&A.txt를 직접 선택해 주세요.");
+      console.error(fallbackError);
+    }
   }
 }
 
@@ -602,9 +670,8 @@ quizControls.forEach((control) => {
   });
 });
 
-if (quizQuestionFileInput && quizAnswerFileInput) {
-  quizQuestionFileInput.addEventListener("change", loadQuizFromSelectedFiles);
-  quizAnswerFileInput.addEventListener("change", loadQuizFromSelectedFiles);
+if (quizQaFileInput) {
+  quizQaFileInput.addEventListener("change", loadQuizFromSelectedFiles);
 }
 
 loadQuiz();

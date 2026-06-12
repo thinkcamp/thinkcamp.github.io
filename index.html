@@ -8,6 +8,7 @@
       name="description"
       content="ThinkCamp is a small software lab focused on practical tools, creative coding, and manufacturing workflows."
     />
+    <meta name="robots" content="noindex, nofollow, noarchive" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -89,7 +90,7 @@
             <p class="eyebrow">Study drill</p>
             <h2 id="quiz-title">Question bank</h2>
             <p>
-              Question.txt와 Answer.txt의 같은 줄을 한 쌍으로 불러와 문제를 만듭니다.
+              Q&amp;A.txt의 문제와 답을 불러와 터치형 문제 카드를 만듭니다.
             </p>
           </div>
 
@@ -110,16 +111,12 @@
           <div class="quiz-file-loader" id="quiz-file-loader" hidden>
             <p>
               로컬 파일로 열었다면 브라우저 보안 정책 때문에 자동으로 txt 파일을 읽을 수 없습니다.
-              아래에서 Question.txt와 Answer.txt를 직접 선택해 주세요.
+              아래에서 Q&amp;A.txt를 직접 선택해 주세요.
             </p>
             <div class="quiz-file-controls">
               <label class="quiz-file-field">
-                <span>Question.txt</span>
-                <input id="quiz-question-file" type="file" accept=".txt,text/plain" />
-              </label>
-              <label class="quiz-file-field">
-                <span>Answer.txt</span>
-                <input id="quiz-answer-file" type="file" accept=".txt,text/plain" />
+                <span>Q&amp;A.txt</span>
+                <input id="quiz-qa-file" type="file" accept=".txt,text/plain" />
               </label>
             </div>
           </div>
@@ -178,6 +175,6 @@
       <span>Hosted with GitHub Pages.</span>
     </footer>
 
-    <script src="script.js?v=20260612-quiz-v2"></script>
+    <script src="script.js?v=20260612-qa-single"></script>
   </body>
 </html>
