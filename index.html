@@ -18,6 +18,7 @@
       </a>
       <nav class="site-nav" aria-label="Primary navigation">
         <a href="#work">Work</a>
+        <a href="#quiz">Quiz</a>
         <a href="#principles">Principles</a>
         <a href="#contact">Contact</a>
       </nav>
@@ -79,6 +80,50 @@
               </p>
             </article>
           </div>
+        </div>
+      </section>
+
+      <section class="section quiz-section" id="quiz" aria-labelledby="quiz-title">
+        <div class="section-inner">
+          <div class="section-heading">
+            <p class="eyebrow">Study drill</p>
+            <h2 id="quiz-title">Question bank</h2>
+            <p>
+              Question.txt와 Answer.txt의 같은 줄을 한 쌍으로 불러와 문제를 만듭니다.
+            </p>
+          </div>
+
+          <div class="quiz-toolbar" aria-label="Quiz controls">
+            <button class="button utility" type="button" data-quiz-action="show-all" disabled>
+              모두 정답 보기
+            </button>
+            <button class="button utility" type="button" data-quiz-action="hide-all" disabled>
+              모두 문제 보기
+            </button>
+            <button class="button utility" type="button" data-quiz-action="shuffle" disabled>
+              문제 섞기
+            </button>
+          </div>
+
+          <div class="quiz-file-loader" id="quiz-file-loader" hidden>
+            <p>
+              로컬 파일로 열었다면 브라우저 보안 정책 때문에 자동으로 txt 파일을 읽을 수 없습니다.
+              아래에서 Question.txt와 Answer.txt를 직접 선택해 주세요.
+            </p>
+            <div class="quiz-file-controls">
+              <label class="quiz-file-field">
+                <span>Question.txt</span>
+                <input id="quiz-question-file" type="file" accept=".txt,text/plain" />
+              </label>
+              <label class="quiz-file-field">
+                <span>Answer.txt</span>
+                <input id="quiz-answer-file" type="file" accept=".txt,text/plain" />
+              </label>
+            </div>
+          </div>
+
+          <p class="quiz-status" id="quiz-status" role="status">문제를 불러오는 중입니다.</p>
+          <div class="quiz-list" id="quiz-list" aria-live="polite"></div>
         </div>
       </section>
 
