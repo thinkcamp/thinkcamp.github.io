@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="360" viewBox="0 0 720 360" role="img" aria-labelledby="title desc">
+  <title id="title">Delta-delta transformer connection example</title>
+  <desc id="desc">Three single-phase transformers connected as a delta on the primary side and a delta on the secondary side.</desc>
+  <rect width="720" height="360" rx="18" fill="#f8fafc"/>
+  <rect x="24" y="24" width="672" height="312" rx="14" fill="#ffffff" stroke="#d8e0ea" stroke-width="2"/>
+  <text x="178" y="62" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#138a8a">Primary delta</text>
+  <text x="542" y="62" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#c8503a">Secondary delta</text>
+
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M178 90 L78 255 H278 Z" stroke="#138a8a" stroke-width="8"/>
+    <path d="M542 90 L442 255 H642 Z" stroke="#c8503a" stroke-width="8"/>
+    <path d="M286 118 C342 82 378 82 434 118" stroke="#64748b" stroke-width="5" stroke-dasharray="12 12"/>
+    <path d="M286 180 C342 148 378 148 434 180" stroke="#64748b" stroke-width="5" stroke-dasharray="12 12"/>
+    <path d="M286 242 C342 206 378 206 434 242" stroke="#64748b" stroke-width="5" stroke-dasharray="12 12"/>
+  </g>
+
+  <g font-family="Arial, sans-serif" font-size="18" font-weight="700">
+    <text x="178" y="86" text-anchor="middle" fill="#0f766e">A</text>
+    <text x="64" y="282" text-anchor="middle" fill="#0f766e">B</text>
+    <text x="292" y="282" text-anchor="middle" fill="#0f766e">C</text>
+    <text x="542" y="86" text-anchor="middle" fill="#b23b2c">a</text>
+    <text x="428" y="282" text-anchor="middle" fill="#b23b2c">b</text>
+    <text x="656" y="282" text-anchor="middle" fill="#b23b2c">c</text>
+  </g>
+
+  <g fill="#101720" font-family="Arial, sans-serif" font-size="15">
+    <text x="360" y="116" text-anchor="middle">T1</text>
+    <text x="360" y="178" text-anchor="middle">T2</text>
+    <text x="360" y="240" text-anchor="middle">T3</text>
+  </g>
+
+  <text x="360" y="318" text-anchor="middle" font-family="Arial, sans-serif" font-size="17" fill="#334155">
+    Three single-phase transformers form a closed delta on both sides.
+  </text>
+</svg>

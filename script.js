@@ -416,6 +416,69 @@ function setCardOpen(card, isOpen) {
   questionButton.setAttribute("aria-expanded", String(isOpen));
   answer.setAttribute("aria-hidden", String(!isOpen));
   card.classList.toggle("is-open", isOpen);
+
+  if (isOpen) {
+    answer.querySelectorAll('img[loading="lazy"]').forEach((image) => {
+      image.loading = "eager";
+    });
+  }
+}
+
+function getQuizImageMatch(line) {
+  return line.match(/^\s*!\[([^\]]*)\]\(([^)\s]+)\)\s*$/);
+}
+
+function isSafeQuizImageSource(source) {
+  const trimmedSource = source.trim();
+  const protocolMatch = trimmedSource.match(/^([a-z][a-z\d+.-]*):/i);
+
+  if (!trimmedSource || /[\u0000-\u001f\u007f]/.test(trimmedSource)) {
+    return false;
+  }
+
+  if (trimmedSource.startsWith("//")) {
+    return false;
+  }
+
+  return !protocolMatch || ["http", "https"].includes(protocolMatch[1].toLowerCase());
+}
+
+function appendQuizTextLine(container, line, options = {}) {
+  const imageMatch = getQuizImageMatch(line);
+
+  if (imageMatch) {
+    const [, altText, rawSource] = imageMatch;
+    const source = rawSource.trim();
+
+    if (isSafeQuizImageSource(source)) {
+      const image = document.createElement("img");
+
+      image.className = options.imageClassName || "quiz-content-image";
+      image.src = source;
+      image.alt = altText.trim();
+      image.loading = "lazy";
+      image.decoding = "async";
+
+      container.append(image);
+      return;
+    }
+  }
+
+  container.append(document.createTextNode(line));
+}
+
+function renderQuizText(container, text, options = {}) {
+  const lines = String(text || "").split("\n");
+
+  container.replaceChildren();
+
+  lines.forEach((line, index) => {
+    if (index > 0) {
+      container.append(document.createElement("br"));
+    }
+
+    appendQuizTextLine(container, line, options);
+  });
 }
 
 function createQuizCard(item, index) {
@@ -439,7 +502,8 @@ function createQuizCard(item, index) {
   number.className = "quiz-number";
   number.textContent = String(item.number || index + 1).padStart(2, "0");
 
-  question.textContent = item.question;
+  question.className = "quiz-question-text";
+  renderQuizText(question, item.question, { imageClassName: "quiz-question-image" });
 
   answer.className = "quiz-answer";
   answer.id = answerId;
@@ -451,7 +515,7 @@ function createQuizCard(item, index) {
   answerLabel.textContent = item.answerNumber ? `정답 ${item.answerNumber}` : "정답";
 
   answerText.className = "quiz-answer-text";
-  answerText.textContent = item.answer;
+  renderQuizText(answerText, item.answer);
 
   questionButton.append(number, question);
   answerInner.append(answerLabel, answerText);

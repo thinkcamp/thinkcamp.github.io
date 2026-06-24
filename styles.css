@@ -426,6 +426,26 @@ h3 {
   font-weight: 850;
 }
 
+.quiz-question-text {
+  min-width: 0;
+}
+
+.quiz-question-image,
+.quiz-content-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 10px 0;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+
+.quiz-question-image {
+  max-height: 220px;
+  object-fit: contain;
+}
+
 .quiz-answer {
   display: grid;
   grid-template-rows: 0fr;
@@ -470,6 +490,11 @@ h3 {
   border-radius: 7px;
   line-height: 1.7;
   white-space: pre-wrap;
+}
+
+.quiz-answer-text .quiz-content-image {
+  max-height: 360px;
+  object-fit: contain;
 }
 
 .principles-section {
